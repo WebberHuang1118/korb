@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 if [[ $1 == "sync" ]]; then
-    rsync -aHA --progress /source/ /dest
+    rsync -I --copy-devices --write-devices --no-whole-file --inplace -v --progress /source /dest
 elif [[ $1 == "sleep" ]]; then
     cat
 else

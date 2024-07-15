@@ -49,8 +49,8 @@ func (m *MoverJob) Wait(startTimeout time.Duration, moveTimeout time.Duration) e
 	if pod == nil {
 		return errors.New("pod not in correct state")
 	}
-	runningPod := *pod
-	go m.followLogs(runningPod)
+	// runningPod := *pod
+	// go m.followLogs(runningPod)
 
 	err := wait.PollUntilContextTimeout(context.Background(), 2*time.Second, moveTimeout, true, func(ctx context.Context) (bool, error) {
 		job, err := m.kClient.BatchV1().Jobs(m.Namespace).Get(ctx, m.kJob.Name, metav1.GetOptions{})

@@ -5,14 +5,15 @@ import (
 	"io"
 	"os"
 
-	"beryju.org/korb/pkg/config"
 	"github.com/goware/prefixer"
 	log "github.com/sirupsen/logrus"
-
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/utils/pointer"
+
+	"beryju.org/korb/pkg/config"
 )
 
 const (
@@ -64,12 +65,13 @@ func (m *MoverJob) Start() *MoverJob {
 			},
 		},
 	}
-	mounts := []corev1.VolumeMount{
+	devices := []corev1.VolumeDevice{
 		{
-			Name:      "source",
-			MountPath: SourceMount,
+			Name:       "source",
+			DevicePath: SourceMount,
 		},
 	}
+
 	if m.mode == MoverTypeSync {
 		volumes = append(volumes, corev1.Volume{
 			Name: "dest",
@@ -80,9 +82,9 @@ func (m *MoverJob) Start() *MoverJob {
 				},
 			},
 		})
-		mounts = append(mounts, corev1.VolumeMount{
-			Name:      "dest",
-			MountPath: DestMount,
+		devices = append(devices, corev1.VolumeDevice{
+			Name:       "dest",
+			DevicePath: DestMount,
 		})
 	}
 
@@ -107,10 +109,15 @@ func (m *MoverJob) Start() *MoverJob {
 							Name:            ContainerName,
 							Image:           config.ContainerImage,
 							ImagePullPolicy: corev1.PullAlways,
-							Args:            []string{string(m.mode)},
-							VolumeMounts:    mounts,
-							TTY:             true,
-							Stdin:           true,
+							SecurityContext: &corev1.SecurityContext{
+								Privileged: pointer.Bool(true),
+							},
+							// Command: []string{"sleep"},
+							// Args:    []string{"3600"},
+							Args:          []string{string(m.mode)},
+							VolumeDevices: devices,
+							TTY:           true,
+							Stdin:         true,
 						},
 					},
 				},

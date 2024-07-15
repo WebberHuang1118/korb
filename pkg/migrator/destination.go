@@ -46,6 +46,7 @@ func (m *Migrator) GetDestinationPVCTemplate(sourcePVC *v1.PersistentVolumeClaim
 					v1.ResourceName(v1.ResourceStorage): m.GetDestPVCSize(*sourcePVC.Spec.Resources.Requests.Storage()),
 				},
 			},
+			VolumeMode:       sourcePVC.Spec.VolumeMode,
 			StorageClassName: sc,
 		},
 	}
